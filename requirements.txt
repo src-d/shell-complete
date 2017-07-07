@@ -1,1 +1,5 @@
-git+https://github.com/src-d/modelforge.git@develop#egg=modelforge
+PyGithub>=1.25,<2.0
+requests>=2.18,<3.0
+just>=0.6,<1.0
+scrapy>=1.4,<2.0
+modelforge>=0.1.0-alpha
