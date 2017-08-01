@@ -5,7 +5,7 @@ setup(
     description="Part of source{d}'s stack for machine learning on source "
                 "code. Provides API and tools to train and use models for "
                 "predicting next shell commands.",
-    version="1.0.0",
+    version="0.1.0",
     license="Apache 2.0",
     author="source{d}",
     author_email="machine-learning@sourced.tech",
@@ -13,7 +13,7 @@ setup(
     download_url='https://github.com/src-d/shell-complete',
     packages=find_packages(exclude=("shcomplete.tests",)),
     keywords=["machine learning on source code", "shell", "bash"],
-    install_requires=["modelforge>=1.0.0", ],
+    install_requires=["modelforge>=0.1.0-alpha", ],
     package_data={"": ["LICENSE", "README.md"]},
     classifiers=[
         "Development Status :: 4 - Beta",
