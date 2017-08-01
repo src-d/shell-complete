@@ -12,4 +12,5 @@ class MySpider(Spider):
 
     def parse(self, response):
         base = "https://raw.githubusercontent.com"
-        just.write(response.text,  "data" + response.url[len(base):])
+        content = response.text.encode("utf-8")
+        just.write(content,  "data" + response.url[len(base):])

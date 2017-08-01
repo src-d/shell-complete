@@ -88,7 +88,7 @@ class Fish(Shell):
 @register_shell
 class Bash(Shell):
     HISTORY_FILE = re.compile(r"/.?bash_history$")
-    GITHUB_QUERY = "filename:bash_history size:>=950 -user:Dahs81"
+    GITHUB_QUERY = "filename:bash_history size:>0 -user:Dahs81"
 
 
 def fetch_repos(args):
