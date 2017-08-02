@@ -1,11 +1,10 @@
-import time
-import os
 import argparse
-import sys
 import logging
+import os
 import re
-
+import sys
 from time import sleep
+
 from github import Github as GitHub
 from github import GithubException
 
@@ -51,25 +50,24 @@ class Shell:
                 continue
 
         repos = [x for x in repos if cls.HISTORY_FILE.search(x)]
-        repos = list(set(repos))  # remove duplicates
+        repos = set(repos)  # remove duplicates
 
         return repos
 
 
-def to_raw_urls(urls):
+def to_raw_urls(urls, base):
     """
     Transform the links returned by GitHub API :
     github.com into raw.githubusercontent.com.
     """
-    base = "https://raw.githubusercontent.com"
-    raw_urls = []
+    raw_urls = set()
     for url in urls:
         url = url.split("/")
         raw_url = base
         for i in range(3, len(url)):
             if url[i] != "blob":
                 raw_url += "/" + url[i]
-        raw_urls.append(raw_url)
+        raw_urls.add(raw_url)
     return raw_urls
 
 
@@ -95,11 +93,16 @@ def fetch_repos(args):
     """
     Fetch the repositories and write the raw links into an output txt file
     """
-    g = GitHub(args.token, password=None, timeout=40, per_page=50)
-    repos = []
-    for cls in __shells__:
-        repos += cls.get_repos(g)
-    repos = to_raw_urls(repos)
+    g = GitHub(args.token, password=None, timeout=args.timeout, per_page=args.per_page)
+    base = "https://raw.githubusercontent.com"
+    all_repos = set()
+    nb_search = args.nb_search
+    for _ in range(nb_search):
+        repos = set()
+        for cls in __shells__:
+            repos.update(cls.get_repos(g))
+        repos = to_raw_urls(repos, base)
+        all_repos.update(repos)
     with open(args.output, "w") as f:
-        for rep in repos:
+        for rep in all_repos:
             f.write(rep + "\n")
