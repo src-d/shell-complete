@@ -48,10 +48,7 @@ class Shell:
                 print("type(%s): %s" % (type(e), e))
                 sleep(0.1)
                 continue
-
-        repos = [x for x in repos if cls.HISTORY_FILE.search(x)]
-        repos = set(repos)  # remove duplicates
-
+        repos = {x for x in repos if cls.HISTORY_FILE.search(x)}
         return repos
 
 
