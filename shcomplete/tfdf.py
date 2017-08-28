@@ -1,11 +1,8 @@
 import logging
 import os
-import re
-from math import log
 from clint.textui import progress
 
 import pygtrie
-import numpy
 
 
 def get_tries(args, _log):
