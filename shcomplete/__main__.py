@@ -18,7 +18,7 @@ def one_arg_parser(*args, **kwargs) -> argparse.ArgumentParser:
     """
     arg_parser = argparse.ArgumentParser(add_help=False)
     arg_parser.add_argument(*args, **kwargs)
-    return arg_parse
+    return arg_parser
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -34,7 +34,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     # Create all common arguments
 
-    data_directory_arg_default = one_arg_parser("-d", "--data-directoty", required=True,
+    data_directory_arg_default = one_arg_parser("-d", "--data-directory", required=True,
                                                 help="Path to input data.")
     output_arg_default = one_arg_parser("-o", "--output", required=True,
                                         help="Path to output file")
@@ -69,7 +69,6 @@ def get_parser() -> argparse.ArgumentParser:
         "Return the ones the model will be able to predict in the next command",
         parents=[data_directory_arg_default, output_arg_default])
     tfdf_parser.set_defaults(handler=filter_prediction_set)
-    # Nodes in the trie increase exponentially with line lengths.
     tfdf_parser.add_argument("--max-length", type=int, default=8,
                              help="Maximum number of tokens in each line.")
     tfdf_parser.add_argument("--threshold", type=float, default=0.01,
@@ -78,7 +77,7 @@ def get_parser() -> argparse.ArgumentParser:
     corpus_parser = subparsers.add_parser(
         "corpus", help="Write all the history files into an output txt file."
         "One file per line.",
-        parents=[input_directory_arg_default, output_arg_default])
+        parents=[data_directory_arg_default, output_arg_default])
     corpus_parser.set_defaults(handler=write_corpus)
 
     return parser
