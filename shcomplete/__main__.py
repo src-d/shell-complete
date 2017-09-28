@@ -8,6 +8,7 @@ from shcomplete.repos import fetch_repos
 from shcomplete.filtering import filter
 from shcomplete.corpus import write_corpus
 from shcomplete.tfdf import filter_prediction_set
+from shcomplete.seq2seq_prediction import train
 
 
 def one_arg_parser(*args, **kwargs) -> argparse.ArgumentParser:
@@ -38,6 +39,8 @@ def get_parser() -> argparse.ArgumentParser:
                                                 help="Path to input data.")
     output_arg_default = one_arg_parser("-o", "--output", required=True,
                                         help="Path to output file")
+    file_delimiter_arg_default = one_arg_parser("--file-delimiter", type=str, default="FILE_SEP\n",
+                                                help="String to separate histores in the corpus.")
 
     # Create and construct subparsers
 
@@ -66,7 +69,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     tfdf_parser = subparsers.add_parser(
         "tfdf", help="Filter prefixes in all files based on their tfdf score."
-        "Return the ones the model will be able to predict in the next command",
+        "Return the ones the model will be able to predict in the next command.",
         parents=[data_directory_arg_default, output_arg_default])
     tfdf_parser.set_defaults(handler=filter_prediction_set)
     tfdf_parser.add_argument("--max-length", type=int, default=8,
@@ -77,8 +80,20 @@ def get_parser() -> argparse.ArgumentParser:
     corpus_parser = subparsers.add_parser(
         "corpus", help="Write all the history files into an output txt file."
         "One file per line.",
-        parents=[data_directory_arg_default, output_arg_default])
+        parents=[data_directory_arg_default, output_arg_default, file_delimiter_arg_default])
     corpus_parser.set_defaults(handler=write_corpus)
+
+    seq2seq_prediction_parser = subparsers.add_parser(
+        "seq2seq_prediction", help="Train the Keras sequential model."
+        "Return at the end of each epoch, a random sequence of commands and its prediction.",
+        parents=[file_delimiter_arg_default])
+    seq2seq_prediction_parser.set_defaults(handler=train)
+    seq2seq_prediction_parser.add_argument("--config-file", required=True,
+                                           help="Path to the configuration file.")
+    seq2seq_prediction_parser.add_argument("--corpus", required=True,
+                                           help="Path to the corpus of shell histories.")
+    seq2seq_prediction_parser.add_argument("--vocabulary", required=True,
+                                           help="Path to the file where is stored the vocabulary.")
 
     return parser
 
