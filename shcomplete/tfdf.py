@@ -5,6 +5,28 @@ from clint.textui import progress
 import pygtrie
 
 
+def build_trie(lines, max_len=8):
+    """
+    Return a trie built with the prefixes encountered in filename
+    """
+    tf_trie = pygtrie.StringTrie(separator=" ")
+    for line in lines:
+        line = [l for l in line.rstrip().replace("\t", " ").split(" ") if l][:max_len]
+        key = " ".join(line)
+        if key not in tf_trie:
+            tf_trie[key] = 0
+        node = tf_trie._root
+        for token in line:
+            node = node.children[token]
+            try:
+                node.value += 1
+            except TypeError:
+                node.value = 1
+    for prefix in tf_trie.keys():
+        tf_trie[prefix] /= len(lines)
+    return tf_trie
+
+
 def get_tries(args, _log):
     """
     Return a list of tries, one for each file where the keys are the command lines.
@@ -15,24 +37,10 @@ def get_tries(args, _log):
         for file_name in files:
             path_to_file = os.path.join(root, file_name)
             _log.info("parsing %s", path_to_file)
-            tf_trie = pygtrie.StringTrie(separator=" ")
-            tries.append((path_to_file, tf_trie))
             with open(path_to_file, "r") as f:
                 lines = f.readlines()
-                for line in lines:
-                    line = [l for l in line.rstrip().replace("\t", " ").split(" ") if l][:max_len]
-                    key = " ".join(line)
-                    if key not in tf_trie:
-                        tf_trie[key] = 0
-                    node = tf_trie._root
-                    for token in line:
-                        node = node.children[token]
-                        try:
-                            node.value += 1
-                        except TypeError:
-                            node.value = 1
-                for prefix in tf_trie.keys():
-                    tf_trie[prefix] /= len(lines)
+            tf_trie = build_trie(lines, max_len)
+            tries.append((path_to_file, tf_trie))
     return tries
 
 
@@ -111,5 +119,6 @@ def filter_prediction_set(args, log_level=logging.INFO):
 
     vocab = list(vocab)
     with open(args.output, "w") as fout:
+        fout.write("UNK\n")
         for prefix in vocab:
             fout.write(prefix + "\n")
