@@ -1,11 +1,8 @@
 import logging
 import os
-import re
-from math import log
 from clint.textui import progress
 
 import pygtrie
-import numpy
 
 
 def get_tries(args, _log):
@@ -18,22 +15,24 @@ def get_tries(args, _log):
         for file_name in files:
             path_to_file = os.path.join(root, file_name)
             _log.info("parsing %s", path_to_file)
-            trie = pygtrie.StringTrie(separator=" ")
-            tries.append((path_to_file, trie))
+            tf_trie = pygtrie.StringTrie(separator=" ")
+            tries.append((path_to_file, tf_trie))
             with open(path_to_file, "r") as f:
                 lines = f.readlines()
                 for line in lines:
                     line = [l for l in line.rstrip().replace("\t", " ").split(" ") if l][:max_len]
                     key = " ".join(line)
-                    if key not in trie:
-                        trie[key] = 0
-                    node = trie._root
+                    if key not in tf_trie:
+                        tf_trie[key] = 0
+                    node = tf_trie._root
                     for token in line:
                         node = node.children[token]
                         try:
                             node.value += 1
                         except TypeError:
                             node.value = 1
+                for prefix in tf_trie.keys():
+                    tf_trie[prefix] /= len(lines)
     return tries
 
 
@@ -43,10 +42,12 @@ def get_df_trie(tries):
     """
     df_trie = pygtrie.StringTrie(separator=" ")
     for _, trie in progress.bar(tries, expected_size=len(tries)):
-        for prefix, _ in trie.iteritems():
+        for prefix in trie.keys():
             if prefix not in df_trie:
                 df_trie[prefix] = 0
             df_trie[prefix] += 1
+    for prefix in df_trie.keys():
+        df_trie[prefix] = (df_trie[prefix] - 1) / len(tries)
     return df_trie
 
 
@@ -55,22 +56,20 @@ def sum_tfdf_tries(tries, df_trie, _log):
     Compute the TF-DF scores of each prefix in each trie.
     Sum these scores in one big trie that is returned.
     """
-    big_trie = pygtrie.StringTrie(separator=" ")
+    tfdf_trie = pygtrie.StringTrie(separator=" ")
     for path_to_file, trie in progress.bar(tries, expected_size=len(tries)):
-        _log.info("\n%s %d\n", path_to_file, len(trie))
         stack = [("", trie._root, df_trie._root)]
         while stack:
             path, local_node, df_node = stack.pop(0)
             for child_key, child_node in local_node.children.items():
                 stack.append((((path + " ") if path else "") + child_key,
                              child_node, df_node.children[child_key]))
-                try:
-                    tfdf = (local_node.value / len(trie)) * ((df_node.value - 1) / len(tries))
-                    print(path)
-                    big_trie[path] = big_trie.get(path, 0) + tfdf
-                except TypeError:
-                    continue
-    return big_trie
+            try:
+                tfdf = local_node.value * df_node.value
+                tfdf_trie[path] = tfdf_trie.get(path, 0) + tfdf
+            except TypeError:
+                continue
+    return tfdf_trie
 
 
 def prune(trie, threshold):
@@ -103,8 +102,8 @@ def filter_prediction_set(args, log_level=logging.INFO):
 
     tries = get_tries(args, _log)
     df_trie = get_df_trie(tries)
-    big_tfdf_trie = sum_tfdf_tries(tries, df_trie, _log)
-    pruned_trie = prune(big_tfdf_trie, threshold=args.threshold)
+    tfdf_trie = sum_tfdf_tries(tries, df_trie, _log)
+    pruned_trie = prune(tfdf_trie, threshold=args.threshold)
 
     vocab = set()
     for prefix in pruned_trie.keys():
