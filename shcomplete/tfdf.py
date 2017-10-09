@@ -12,16 +12,17 @@ def build_trie(lines, max_len=8):
     tf_trie = pygtrie.StringTrie(separator=" ")
     for line in lines:
         line = [l for l in line.rstrip().replace("\t", " ").split(" ") if l][:max_len]
-        key = " ".join(line)
-        if key not in tf_trie:
-            tf_trie[key] = 0
-        node = tf_trie._root
-        for token in line:
-            node = node.children[token]
-            try:
-                node.value += 1
-            except TypeError:
-                node.value = 1
+        if line:
+            key = " ".join(line)
+            if key not in tf_trie:
+                tf_trie[key] = 0
+            node = tf_trie._root
+            for token in line:
+                node = node.children[token]
+                try:
+                    node.value += 1
+                except TypeError:
+                    node.value = 1
     for prefix in tf_trie.keys():
         tf_trie[prefix] /= len(lines)
     return tf_trie
@@ -119,6 +120,6 @@ def filter_prediction_set(args, log_level=logging.INFO):
 
     vocab = list(vocab)
     with open(args.output, "w") as fout:
-        fout.write("UNK\n")
+        fout.write("UNK")
         for prefix in vocab:
-            fout.write(prefix + "\n")
+            fout.write("\n" + prefix)

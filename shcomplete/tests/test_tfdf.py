@@ -1,8 +1,9 @@
 import argparse
 import logging
+import tempfile
 import unittest
 
-from shcomplete.tfdf import get_tries, get_df_trie, sum_tfdf_tries, prune
+from shcomplete.tfdf import get_tries, get_df_trie, sum_tfdf_tries, prune, filter_prediction_set
 
 
 def get_values(tries):
@@ -16,7 +17,7 @@ def get_values(tries):
 class TestTries(unittest.TestCase):
     def setUp(self):
         self.args = argparse.Namespace(max_length=8, threshold=0.01,
-                                       data_directory="shcomplete/tests/data")
+                                       data_directory="shcomplete/tests/data/histories")
         self._log = logging.getLogger("test")
         self._log.setLevel(logging.WARNING)
         self.tries = get_tries(self.args, self._log)
@@ -57,11 +58,22 @@ class TestTries(unittest.TestCase):
             self.assertEqual(len(self.tfdf_trie), len(self.df_trie))
 
     def test_prune(self):
-        pruned_trie = prune(self.tfdf_trie, self.args.threshold)
-        for prefix, value in pruned_trie.iteritems():
+        self.pruned_trie = prune(self.tfdf_trie, self.args.threshold)
+        for prefix, value in self.pruned_trie.iteritems():
             self.assertTrue(prefix, self.tfdf_trie)
             self.assertTrue(value >= self.args.threshold)
-            self.assertTrue(len(pruned_trie) <= len(self.tfdf_trie))
+            self.assertTrue(len(self.pruned_trie) <= len(self.df_trie))
+
+    def test_write_vocab(self):
+        self.pruned_trie = prune(self.tfdf_trie, self.args.threshold)
+        with tempfile.NamedTemporaryFile(prefix="shcomplete-test-tfdf", suffix=".txt") as tmpf:
+            args = argparse.Namespace(max_length=8, threshold=0.01,
+                                      data_directory="shcomplete/tests/data/histories",
+                                      output=tmpf.name)
+            filter_prediction_set(args)
+            vocab = tmpf.read().decode("utf-8")
+        self.assertIsInstance(vocab, str)
+        self.assertEqual(len(vocab.split("\n")), len(self.pruned_trie) + 1)
 
 
 if __name__ == '__main__':

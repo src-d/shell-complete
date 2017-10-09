@@ -1,7 +1,7 @@
 import logging
 import random
 import sys
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 
 from keras.callbacks import Callback
 from keras.layers import Dense, Activation, LSTM, Dropout
@@ -16,7 +16,7 @@ def get_config(config_file):
     """
     Return a dict where is store the parameters of the model from the configuration file.
     """
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.read(config_file)
     params_ints = [(key, int(value)) for key, value in parser.items("ints")]
     params_floats = [(key, float(value)) for key, value in parser.items("floats")]
@@ -35,7 +35,7 @@ def get_vocabulary(path_to_vocab):
     return vocab
 
 
-class vocabulary(object):
+class Vocabulary(object):
 
     def __init__(self, path_to_vocab):
         self.vocab = get_vocabulary(path_to_vocab)
@@ -66,68 +66,66 @@ class vocabulary(object):
         return sequence
 
 
-def vectorize(sequences, next_commands, vocab, path_to_vocab):
+def vectorize(sequences, next_commands, vocab, path_to_vocab, gConfig):
     """
     Vectorize the data in mumpy arrays.
     """
     X = np.zeros((len(sequences), gConfig["seq_len"], vocab.size), dtype=np.bool)
     y = np.zeros((len(sequences), vocab.size), dtype=np.bool)
+    vocab_trie = vocab.trie(path_to_vocab)
     for i, sequence in enumerate(sequences):
         for j, command in enumerate(sequence):
             try:
-                vocab_trie = vocab.trie(path_to_vocab)
                 prefix = vocab_trie.longest_prefix(command)[0]
                 X[i, j, vocab.command2index[prefix]] = 1
             except KeyError:
                 X[i, j, vocab.command2index["UNK"]] = 1
-        y[i, vocab.command2index[next_commands[i]]] = 1
+        try:
+            next_prefix = vocab_trie.longest_prefix(next_commands[i])[0]
+            y[i, vocab.command2index[next_prefix]] = 1
+        except KeyError:
+            y[i, vocab.command2index["UNK"]] = 1
     return X, y
 
 
-def generator(path_to_corpus, file_delimiter, path_to_vocab):
+def generator(path_to_corpus, file_delimiter, path_to_vocab, gConfig):
     """
     Return a random batch of data to feed fit_generator.
     The ouput is a tuple (sequences, outputs)
     """
-    vocab = vocabulary(path_to_vocab)
+    vocab = Vocabulary(path_to_vocab)
     sequences = []
     next_commands = []
     while True:
         with open(path_to_corpus, "r") as f:
-            histories = f.read().split(file_delimiter)
+            histories = f.read()[:17000].split(file_delimiter)
             for history in histories:
                 history = history.split("\n")
                 for _ in range(gConfig["batch_size"]):
                     ind = random.randint(0, len((history[:-gConfig["seq_len"]])) - 1)
                     sequence = [cmd.rstrip() for cmd in history[ind:ind + gConfig["seq_len"]]]
                     sequences.append(sequence)
-                    vocab_trie = vocab.trie(path_to_vocab)
-                    next_prefix = vocab_trie.longest_prefix(history[ind + gConfig["seq_len"]])[0]
-                    if next_prefix is not None and next_prefix:
-                        next_commands.append(next_prefix)
-                    else:
-                        next_commands.append("UNK")
-
+                    next_commands.append(history[ind + gConfig["seq_len"]])
                     if len(sequences) == gConfig["batch_size"]:
-                        X, y = vectorize(sequences, next_commands, vocab, path_to_vocab)
-                        yield X, y
+                        X, y = vectorize(sequences, next_commands, vocab, path_to_vocab, gConfig)
                         sequences = []
                         next_commands = []
+                        yield X, y
 
 
-def generate_model(vocab):
+def generate_model(vocab, gConfig):
     """
     Generate the model.
     """
     model = Sequential()
     for layer_id in range(gConfig["input_layers"]):
-        model.add(LSTM(gConfig["hidden_size"], input_shape=(gConfig["seq_len"], vocab.size),
+        model.add(LSTM(gConfig["hidden_layers"], input_shape=(gConfig["seq_len"], vocab.size),
                        return_sequences=layer_id + 1 < gConfig["input_layers"]))
         model.add(Dropout(gConfig["amount_of_dropout"]))
 
     model.add(Dense(vocab.size))
     model.add(Activation("softmax"))
-    optimizer = RMSprop(lr=gConfig["learning_rate"])
+    #  optimizer = RMSprop(lr=gConfig["learning_rate"])
     model.compile(loss="categorical_crossentropy", optimizer="adam")
     return model
 
@@ -157,6 +155,7 @@ def sample_prediction(model, X, y, vocab):
     sys.stdout.write(next_command_true + "\n")
     sys.stdout.flush()
     print()
+    return sequence, next_command_pred, next_command_true
 
 
 class OnEpochEndCallback(Callback):
@@ -165,8 +164,8 @@ class OnEpochEndCallback(Callback):
         """
         Apply the prediction of the model to a batch of data at the end of each epoch.
         """
-        vocab = vocabulary("vocab_0.01.txt")
-        X_batch, y_batch = next(generator("corpus3.txt", "FILE_SEP\n", "vocab_0.01.txt"))
+        vocab = Vocabulary("vocab_0.01.txt")
+        X_batch, y_batch = next(generator("corpus3.txt", "FILE_SEP\n", "vocab_0.01.txt", gConfig))
         sample_prediction(self.model, X_batch, y_batch, vocab)
 
 
@@ -177,7 +176,7 @@ def iterate(model, corpus, file_delimiter, path_to_vocab):
     """
     Iterative training of the model.
     """
-    model.fit_generator(generator(corpus, file_delimiter, path_to_vocab),
+    model.fit_generator(generator(corpus, file_delimiter, path_to_vocab, gConfig),
                         samples_per_epoch=gConfig["steps_per_epoch"],
                         nb_epoch=gConfig["nb_epoch"],
                         callbacks=[ON_EPOCH_END_CALLBACK, ],
@@ -193,6 +192,6 @@ def train(args, log_level=logging.INFO):
 
     global gConfig
     gConfig = get_config(args.config_file)
-    vocab = vocabulary(args.vocabulary)
-    model = generate_model(vocab)
+    vocab = Vocabulary(args.vocabulary)
+    model = generate_model(vocab, gConfig)
     iterate(model, args.corpus, args.file_delimiter, args.vocabulary)

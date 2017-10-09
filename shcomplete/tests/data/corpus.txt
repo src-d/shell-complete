@@ -1,0 +1,446 @@
+cd Source/Telescope/telescope-auth/
+be cap delete_account email=roger@clarkesnottm.com
+be cap delete_account email=tina@clarkesnottm.com
+exit
+git push
+rm app/helpers/test/merchants_helper.rb
+rm spec/controllers/regions_controller_spec.rb
+rm spec/helpers/test/merchants_helper_spec.rb
+git status
+git commit -a -m "removed irrelevant files"
+git push
+mkdir app/models/merchant
+touch app/models/merchant/region_update_job.rb
+be rspec spec/models/merchant_spec.rb
+ack-grep _changed
+be rspec spec/models/merchant_spec.rb
+mkdir spec/models/merchant
+touch spec/models/merchant/region_update_job_spec.rb
+be rspec spec/models/merchant/region_update_job_spec.rb
+be rspec spec/
+git status
+ack-grep alert
+git status
+git add app/models/merchant
+git add spec/models/merchant
+git commit -a -m "Products are updated with their merchants region"
+git push
+rm spec/controllers/test/merchants_controller_spec.rb
+rm app/assets/stylesheets/test/merchants.css.scss
+git status
+git commit -a -m "more empty files removed"
+git push
+git commit -a -m "Removed redundant parameter parsing"
+git push
+be rspec spec/models/
+be rspec spec/models/merchant_spec.rb
+git status
+git commit -a -m "feedback"
+git push
+git checkout master
+git pull
+git push origin :305_regions
+git status
+git push
+be cap deploy
+git status
+git commit -a -m "row lines"
+git push
+be cap deploy
+exit
+vim
+exit
+be rails s
+exit
+cd Source/Telescope/whiteboard
+git push
+ea srv-mb2d3
+ssh-add ~/.ssh/ea-admin
+ssh-agent
+ssh-add ~/.ssh/ea-admin
+tmux list-sessions
+ea srv-mb2d3
+ssh-agent add ~/.ssh/ea-admin
+ssh-agen ~/.ssh/ea-admin
+ssh-agent ~/.ssh/ea-admin
+whoami
+ssh-agent
+ssh-agent --help
+cat ~/.ssh/ea-admin
+ea srv-mb2d3
+exit
+tmux attach -t ember
+tmux list-sessions
+cd Source/Telescope/products
+vim
+cd ~/Source/EmberAds/matcher/
+vim
+cd ..
+cd adstore/
+vim
+cd ...
+cd ..
+cd common/
+vim
+cd ..
+cd adstore/
+vim
+cd ~
+tmux list-sessions
+tmux
+cd Source/EmberAds/admin_panel/
+be cap deploy:start
+cd ..
+cd sysadmin_scripts/
+ea srv-tvtdw
+exit
+cd Source/Telescope/whiteboard
+be rspec spec/
+rvm use 1.9.3@whiteboard
+be rspec spec/
+cat spec/spec_helper.rb
+ls spec/support/
+cat spec/support/subdomain.rb
+clear
+be rspec spec/
+git pull
+git diff app/views/pages/show.html.erb
+git checkout .
+git pull
+git status
+rm app/assets/javascripts/app/pages.js.coffee
+git status
+git checkout master
+git checkout new_ui
+vim
+git status
+vim .gitignore
+git status
+git add config/*
+git add config/deploy/new_ui.rb
+vim .gitignore
+git status
+git commit -a -m "Added new UI deployment"
+vim
+git status
+git commit -a -m "Added new UI deployment"
+vim config/deploy/new_ui.rb
+git status
+git commit -a -m "More new UI"
+be cap deploy:initial
+cat Gemfile
+rvm use 1.8.7@whiteboard
+be cap deploy:initial
+be cap new_ui deploy:initial
+git status
+be rspec spec/
+git status
+git commit -a -m "Replaced stupid code with slightly less stupid code"
+be rspec spec/models/merchant_spec.rb
+git reset HEAD~1
+be rspec spec/models/merchant_spec.rb
+git status
+git log
+git checkout .
+git status
+be rspec spec/
+git pull
+vim
+git pull
+git status
+git checkout .
+git pul
+git pull
+git push
+be cap deploy
+bundle
+be cap deploy
+vim
+exit
+git pull
+bundle
+vim
+be rspec spec/models/brand_centroid/selector_spec.rb
+git statu
+git status
+git diff spec/models/brand_centroid/selector_spec.rb
+be rspec spec/models/brand_centroid/selector_spec.rb
+be rspec spec/
+git status
+git diff spec/models/brand_centroid/selector_spec.rb
+be rspec spec/models/brand_centroid/selector_spec.rb
+be rspec spec/
+exit
+FILE DELIMITER
+git fetch -p
+git pull
+git branch
+git branch sql_lamu
+git checkout sql_lamu
+git branch
+git branch
+git status
+git status
+git status
+git status
+git branch
+git commit -am "最长连胜纪录sql修改"
+git status
+git branch
+git checkout new_dev
+git branch
+git pull
+git pull
+git pull
+git fetch
+git fetch -p
+git merge sql_lamu
+git status
+git diff
+git log
+git diff --cache
+git diff
+git status
+git log
+../dist.web.sh 3c4a0d3 HEAD
+git push
+git push
+git checkout sql_lamu
+git branch
+git git status
+git status
+git status
+git diff
+git log
+qq
+git commit -am "最长连胜纪录sql修改2"
+git status
+git branch
+git checkout new_dev
+git merge sql_lamu
+git pull
+git branch
+git status
+git log
+git push
+git log
+git branch
+git push
+git pull
+git log
+../dist.web.sh 913128d77 HEAD
+../dist.web.sh 913128d7 HEAD
+../dist.web.sh 61ddc1b cc90b8a
+git branch
+source ~/.git-completion.bash
+git checkout info_update
+git status
+git log
+git branch
+git status
+git status
+git diff
+git diff --color
+git branch
+git commit -am "资料库修改"
+git status
+git log
+git branch
+git checkout new_dev
+git pull
+git pull
+git pull
+git branch
+git merge info_update
+git log
+git status
+git push
+git push
+git pull
+git log
+../dist.web.sh dbcbff93 HEAD
+git log
+git log
+../dist.web.sh dbcbff9 HEAD
+git log
+../dist.web.sh dbcbff9 1601634
+git log
+git checkout info_update
+git status
+git log
+git checkout new_dev
+git log
+../dist.web.sh ef07f0 dbcdff
+../dist.web.sh ef07f0 dbcbff
+git branch
+git pull
+git pull
+git pull
+git branch
+git branch info_bug
+git checkout info_bug
+git branch
+git status
+git diff
+git diff --color
+git status
+git commit -am "资料库剩余时间修改"
+git status
+git log
+git branch
+git checkout new_dev
+git pull
+git merge info_bug
+git diff
+git log
+git push
+../dist.web.sh HEAD^ HEAD
+git branch
+cd ..
+git clone git@oscar:fb_library.git
+ll
+cd ~/.ssh/
+ll
+vim config
+git clone dev git@oscar:fb_library.git
+git clone -b dev git@oscar:fb_library.git
+ll
+rm -rf oscar
+FILE DELIMITER
+sudo osu
+sudo su
+exit
+sudo su
+cd ~
+ls
+top
+ftp
+ls
+tar zxvf 1.2.4bukkit.tgz
+ls
+cd 1.2.4bukkit/
+ls
+screen java -jar craftbukkit-dev.jar
+nano server.properties
+screen java -jar craftbukkit-dev.jar
+cd plugins
+cd ProtectionStones/
+ls
+nano config.yml
+screen -r
+cd 1.2.4bukkit/
+ls
+rm craftbukkit-dev.jar
+wget http://dl.bukkit.org/downloads/craftbukkit/get/00979_1.2.4-R0.1/craftbukkit-dev.jar
+ls
+cd 1.2.4bukkit/
+ls
+screen java -jar ./craftbukkit-dev.jar
+cd plugins
+ls
+wget http://dev.bukkit.org/media/files/546/828/Minequery-1.5.zip
+unzip Minequery-1.5.zip
+sudo apt-get install unzip
+unzip Minequery-1.5.zip
+screen -r
+cd ..
+ls
+screen java -jar ./craftbukkit-dev.jar
+screen -r
+nano server.pr
+ls
+cd 1.2.4bukkit/
+ls
+nano server.properties
+screen java -jar ./craftbukkit-dev.jar
+cd plugins
+cd WorldGuard
+ls
+nano config.yml
+nano blacklist.txt
+nano config.yml
+cd ..
+cd Towny/
+ls
+cd settings/
+ls
+nano config.yml
+screen -r
+creen -r
+screen -r
+screen 26076.pts-0.deb123
+screeen -r
+screen -r
+screen 26076.pts-0.deb123
+screen -r 26076.pts-0.deb123
+screen -r 260
+screen -x
+screen -x
+sudo apt-get install wu-ftpd
+screen -x
+tar zcvf bukkit.tgz 1.2.4bukkit
+cd plugins
+ls
+rm bukkit.tgz
+ls
+mv 1.2.4bukkit/ b
+cd b
+ls
+cds b
+cd b
+screen java -jar ./craftbukkit-dev.jar
+cd plugins
+ls
+cd GroupManager/
+ls
+nano config.yml
+nano globalgroups.yml
+screen -r
+nano globalgroups.yml
+screen -r
+ls
+screen -r
+tar zcvf b b.tgz
+tar zcvf b.tgz b
+ls
+mkdir testing
+cd testing
+ls
+cd ..
+ls
+rm b.tgz
+ls
+cd b
+ls
+cp * ~/b
+cp * ~/b -R
+cp * ~/testing -R
+ls
+cd ..
+ls
+rm -Rf b
+ls
+cd testing
+ls
+rm -Rf world
+rm -Rf world_nether
+rm -Rf world_the_end
+ls
+cd plugins
+ls
+cd Town
+cd Towny
+ls
+cd data
+ls
+cd ..
+ls
+rm -Rf data
+rm -Rf backup
+rm -Rf logs
+ls
+ls
+cd ..
+ls
+cd ProtectionStones/
+
