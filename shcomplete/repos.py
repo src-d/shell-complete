@@ -24,7 +24,7 @@ class Shell:
     """
 
     @classmethod
-    def get_repos(cls, api, level=logging.INFO):
+    def get_repos(cls, api, testing=False, level=logging.INFO):
         """
         Get the list of repositories
         """
@@ -41,12 +41,11 @@ class Shell:
                         "repo nº{x} :\n{y}".format(x=nb_repos, y=rep.html_url))
                 success_query = True
             except GithubException:
-                print("Hit rate limit, sleeping 60 seconds...")
-                sleep(60)
-                continue
-            except Exception as e:
-                print("type(%s): %s" % (type(e), e))
-                sleep(0.1)
+                if testing:
+                    success_query = True
+                else:
+                    print("Hit rate limit, sleeping 60 seconds...")
+                    sleep(60)
                 continue
         repos = {x for x in repos if cls.HISTORY_FILE.search(x)}
         return repos
@@ -86,7 +85,7 @@ class Bash(Shell):
     GITHUB_QUERY = "filename:bash_history size:>0 -user:Dahs81"
 
 
-def fetch_repos(args):
+def fetch_repos(args, testing=False):
     """
     Fetch the repositories and write the raw links into an output txt file
     """
@@ -97,7 +96,7 @@ def fetch_repos(args):
     for _ in range(nb_search):
         repos = set()
         for cls in __shells__:
-            repos.update(cls.get_repos(g))
+            repos.update(cls.get_repos(g, testing))
         repos = to_raw_urls(repos, base)
         all_repos.update(repos)
     with open(args.output, "w") as f:
