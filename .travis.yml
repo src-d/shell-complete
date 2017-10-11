@@ -11,7 +11,7 @@ _install: &_install
   - pip install -r requirements.txt codecov
   - pip install -e .
 _coverage: &_coverage
-  - SCRIPT="coverage run -m unittest discover shcomplete/tests"
+  - SCRIPT="coverage run -m unittest discover shcomplete/tests -b"
 matrix:
   include:
     - python: 3.4
