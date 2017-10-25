@@ -1,18 +1,15 @@
-import argparse
-import logging
-import sys
+import os
 import unittest
-from io import TextIOWrapper, BytesIO
 
 import numpy as np
 
-from shcomplete.seq2seq_prediction import get_config, Vocabulary, vectorize, generate_model
-from shcomplete.seq2seq_prediction import generator, sample_prediction
+from shcomplete.seq2seq_prediction import get_config, Vocabulary, generate_model
+from shcomplete.seq2seq_prediction import generator, sample_prediction, OnEpochEndCallback
 
 
 class ConfigTests(unittest.TestCase):
     def setUp(self):
-        self.gConfig = get_config("shcomplete/seq2seq_prediction.ini")
+        self.gConfig = get_config("shcomplete/seq2seq.ini")
 
     def test_type(self):
         self.assertIsInstance(self.gConfig, dict)
@@ -31,7 +28,7 @@ class ConfigTests(unittest.TestCase):
 
 class DataGenerator(unittest.TestCase):
     def setUp(self):
-        self.gConfig = get_config("shcomplete/seq2seq_prediction.ini")
+        self.gConfig = get_config("shcomplete/seq2seq.ini")
         self.path_to_vocab = "shcomplete/tests/data/vocab_0.01.txt"
         self.vc = Vocabulary(self.path_to_vocab)
         self.trie = self.vc.trie(self.path_to_vocab)
@@ -71,21 +68,34 @@ class DataGenerator(unittest.TestCase):
 
 class ModelTests(unittest.TestCase):
     def setUp(self):
-        self.gConfig = get_config("shcomplete/seq2seq_prediction.ini")
+        self.gConfig = get_config("shcomplete/seq2seq.ini")
         self.path_to_vocab = "shcomplete/tests/data/vocab_0.01.txt"
         self.vc = Vocabulary(self.path_to_vocab)
         self.path_to_corpus = "shcomplete/tests/data/corpus.txt"
         self.file_delimiter = "FILE DELIMITER\n"
-        self.model = generate_model(self.vc, self.gConfig)
+        self.model = generate_model(self.path_to_vocab, self.gConfig)
+        self.models_directory = "shcomplete/tests/data"
 
     def test_generate_model(self):
         self.assertTrue(self.model.built)
-        self.assertEqual(self.model.name, "sequential_1")
+        self.assertIn("sequential", self.model.name)
         self.assertTrue(self.model.trainable)
         self.assertIsInstance(self.model.get_weights()[0], np.ndarray)
         self.assertEqual(self.model.get_weights()[0].shape,
                          (self.vc.size, self.gConfig["hidden_layers"]))
         self.assertTrue(self.model.model.uses_learning_phase)
+
+    def test_callback(self):
+        ON_EPOCH_END_CALLBACK = OnEpochEndCallback(self.path_to_vocab, self.file_delimiter,
+                                                   self.path_to_corpus, self.models_directory,
+                                                   self.gConfig)
+        self.model.fit_generator(generator(self.path_to_corpus, self.file_delimiter,
+                                           self.path_to_vocab, self.gConfig),
+                                 samples_per_epoch=2,
+                                 nb_epoch=1,
+                                 callbacks=[ON_EPOCH_END_CALLBACK, ],
+                                 validation_data=None)
+        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_pred_e0.h5"))
 
     def test_sample_prediction(self):
         X, y = next(generator(self.path_to_corpus, self.file_delimiter,

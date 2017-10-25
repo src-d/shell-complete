@@ -12,7 +12,8 @@ class MainTests(unittest.TestCase):
             "filtering": "filter",
             "tfdf": "filter_prediction_set",
             "corpus": "write_corpus",
-            "seq2seq_prediction": "train"
+            "seq2seq_prediction": "train_pred",
+            "seq2seq_correction": "train_corr"
         }
         parser = main.get_parser()
         subcommands = set([x.dest for x in parser._subparsers._actions[2]._choices_actions])

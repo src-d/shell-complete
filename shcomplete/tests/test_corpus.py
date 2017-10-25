@@ -8,7 +8,7 @@ from shcomplete.corpus import write_corpus
 class CorpusTests(unittest.TestCase):
 
     def test_write_vocab(self):
-        self.file_delimiter = "FILE DELIMITER\n"
+        self.file_delimiter = "FILE_SEP\n"
         with tempfile.NamedTemporaryFile(prefix="shcomplete-test-corpus", suffix=".txt") as tmpf:
             args = argparse.Namespace(data_directory="shcomplete/tests/data/histories",
                                       output=tmpf.name)

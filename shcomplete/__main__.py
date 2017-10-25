@@ -8,7 +8,8 @@ from shcomplete.repos import fetch_repos
 from shcomplete.filtering import filter
 from shcomplete.corpus import write_corpus
 from shcomplete.tfdf import filter_prediction_set
-from shcomplete.seq2seq_prediction import train
+from shcomplete.seq2seq_prediction import train_pred
+from shcomplete.seq2seq_correction import train_corr
 
 
 def one_arg_parser(*args, **kwargs) -> argparse.ArgumentParser:
@@ -41,6 +42,17 @@ def get_parser() -> argparse.ArgumentParser:
                                         help="Path to output file")
     file_delimiter_arg_default = one_arg_parser("--file-delimiter", type=str, default="FILE_SEP\n",
                                                 help="String to separate histores in the corpus.")
+    config_file_arg_default = one_arg_parser("--config-file", required=True,
+                                             help="Path to the configuration file.")
+    corpus_arg_default = one_arg_parser("--corpus", required=True,
+                                        help="Path to the corpus of shell histories.")
+    vocabulary_arg_default = one_arg_parser("--vocabulary", required=True,
+                                            help="Path to the file that contains the vocabulary.")
+    models_directory_arg_default = one_arg_parser("--models-directory", required=True,
+                                                  help="Directory where models are saved"
+                                                  "at any checkpoint.")
+    from_model_arg_default = one_arg_parser("--from-model",
+                                            help="Path to the model to start the training from.")
 
     # Create and construct subparsers
 
@@ -84,16 +96,20 @@ def get_parser() -> argparse.ArgumentParser:
     corpus_parser.set_defaults(handler=write_corpus)
 
     seq2seq_prediction_parser = subparsers.add_parser(
-        "seq2seq_prediction", help="Train the Keras sequential model."
+        "seq2seq_prediction", help="Train a Keras sequential model."
         "Return at the end of each epoch, a random sequence of commands and its prediction.",
-        parents=[file_delimiter_arg_default])
-    seq2seq_prediction_parser.set_defaults(handler=train)
-    seq2seq_prediction_parser.add_argument("--config-file", required=True,
-                                           help="Path to the configuration file.")
-    seq2seq_prediction_parser.add_argument("--corpus", required=True,
-                                           help="Path to the corpus of shell histories.")
-    seq2seq_prediction_parser.add_argument("--vocabulary", required=True,
-                                           help="Path to the file where is stored the vocabulary.")
+        parents=[config_file_arg_default, vocabulary_arg_default,
+                 file_delimiter_arg_default, corpus_arg_default,
+                 models_directory_arg_default, from_model_arg_default])
+    seq2seq_prediction_parser.set_defaults(handler=train_pred)
+
+    seq2seq_correction_parser = subparsers.add_parser(
+        "seq2seq_correction", help="Train a Keras sequential model."
+        "Return at the end of each epoch, a random misspelled command and its correction.",
+        parents=[config_file_arg_default, vocabulary_arg_default,
+                 file_delimiter_arg_default, corpus_arg_default,
+                 models_directory_arg_default, from_model_arg_default])
+    seq2seq_correction_parser.set_defaults(handler=train_corr)
 
     return parser
 

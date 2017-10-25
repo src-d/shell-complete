@@ -32,7 +32,6 @@ class FetchReposTests(unittest.TestCase):
             fetch_repos(args, testing=True)
             repos = tmpf.read().decode("utf-8")
         self.assertIsInstance(repos, str)
-        print("len_repos :", len(repos.split("\n")))
         self.assertTrue(len(repos.split("\n")) >= 1)
 
 

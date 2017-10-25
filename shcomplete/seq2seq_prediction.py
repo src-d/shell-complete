@@ -1,13 +1,13 @@
 import logging
-import random
+import os
 import sys
 from configparser import ConfigParser
 
 from keras.callbacks import Callback
 from keras.layers import Dense, Activation, LSTM, Dropout
-from keras.models import Sequential
-from keras.optimizers import RMSprop
+from keras.models import Sequential, load_model
 import numpy as np
+from numpy.random import randint
 
 from shcomplete.tfdf import build_trie
 
@@ -20,7 +20,8 @@ def get_config(config_file):
     parser.read(config_file)
     params_ints = [(key, int(value)) for key, value in parser.items("ints")]
     params_floats = [(key, float(value)) for key, value in parser.items("floats")]
-    return dict(params_ints + params_floats)
+    params_strings = [(key, str(value)) for key, value in parser.items("strings")]
+    return dict(params_ints + params_floats + params_strings)
 
 
 def get_vocabulary(path_to_vocab):
@@ -57,35 +58,38 @@ class Vocabulary(object):
             content = f.read().split("\n")
         return build_trie(content)
 
+    def encode(self, batch_of_data, vocab_trie, seq_len):
+        """
+        Encode sequences of commands into numpy arrays.
+        """
+        if len(batch_of_data[0]) == seq_len:
+            X = np.zeros((len(batch_of_data), seq_len, self.size), dtype=np.bool)
+            for i, sequence in enumerate(batch_of_data):
+                for j, cmd in enumerate(sequence):
+                    try:
+                        prefix = vocab_trie.longest_prefix(cmd)[0]
+                        X[i, j, self.command2index[prefix]] = 1
+                    except KeyError:
+                        X[i, j, self.command2index["UNK"]] = 1
+            return X
+        else:
+            assert type(batch_of_data[0]) == str
+            y = np.zeros((len(batch_of_data), self.size), dtype=np.bool)
+            for i, sequence in enumerate(batch_of_data):
+                try:
+                    next_prefix = vocab_trie.longest_prefix(batch_of_data[i])[0]
+                    y[i, self.command2index[next_prefix]] = 1
+                except KeyError:
+                    y[i, self.command2index["UNK"]] = 1
+            return y
+
     def decode(self, X):
         """
-        Decode the numpy array X and return the corresponding string.
+        Decode the numpy array X and return the corresponding command.
         """
         X = X.argmax(axis=-1)
         sequence = "\n".join(self.index2command[i] for i in X)
         return sequence
-
-
-def vectorize(sequences, next_commands, vocab, path_to_vocab, gConfig):
-    """
-    Vectorize the data in mumpy arrays.
-    """
-    X = np.zeros((len(sequences), gConfig["seq_len"], vocab.size), dtype=np.bool)
-    y = np.zeros((len(sequences), vocab.size), dtype=np.bool)
-    vocab_trie = vocab.trie(path_to_vocab)
-    for i, sequence in enumerate(sequences):
-        for j, command in enumerate(sequence):
-            try:
-                prefix = vocab_trie.longest_prefix(command)[0]
-                X[i, j, vocab.command2index[prefix]] = 1
-            except KeyError:
-                X[i, j, vocab.command2index["UNK"]] = 1
-        try:
-            next_prefix = vocab_trie.longest_prefix(next_commands[i])[0]
-            y[i, vocab.command2index[next_prefix]] = 1
-        except KeyError:
-            y[i, vocab.command2index["UNK"]] = 1
-    return X, y
 
 
 def generator(path_to_corpus, file_delimiter, path_to_vocab, gConfig):
@@ -94,47 +98,50 @@ def generator(path_to_corpus, file_delimiter, path_to_vocab, gConfig):
     The ouput is a tuple (sequences, outputs)
     """
     vocab = Vocabulary(path_to_vocab)
+    vocab_trie = vocab.trie(path_to_vocab)
     sequences = []
     next_commands = []
     while True:
         with open(path_to_corpus, "r") as f:
-            histories = f.read()[:17000].split(file_delimiter)
-            for history in histories:
-                history = history.split("\n")
-                for _ in range(gConfig["batch_size"]):
-                    ind = random.randint(0, len((history[:-gConfig["seq_len"]])) - 1)
-                    sequence = [cmd.rstrip() for cmd in history[ind:ind + gConfig["seq_len"]]]
-                    sequences.append(sequence)
-                    next_commands.append(history[ind + gConfig["seq_len"]])
-                    if len(sequences) == gConfig["batch_size"]:
-                        X, y = vectorize(sequences, next_commands, vocab, path_to_vocab, gConfig)
-                        sequences = []
-                        next_commands = []
-                        yield X, y
+            histories = f.read().split(file_delimiter)
+            id = randint(0, len(histories)-2)
+            history = histories[id].split("\n")
+            for _ in range(gConfig["batch_size"]):
+                ind = randint(0, len((history[:-gConfig["seq_len"]])) - 1)
+                sequence = [cmd.rstrip() for cmd in history[ind:ind + gConfig["seq_len"]]]
+                sequences.append(sequence)
+                next_commands.append(history[ind + gConfig["seq_len"]])
+            assert len(sequences) == gConfig["batch_size"]
+            assert len(sequences) == len(next_commands)
+            X = vocab.encode(sequences, vocab_trie, gConfig["seq_len"])
+            y = vocab.encode(next_commands, vocab_trie, gConfig["seq_len"])
+            sequences = []
+            next_commands = []
+            yield X, y
 
 
-def generate_model(vocab, gConfig):
+def generate_model(path_to_vocab, gConfig):
     """
     Generate the model.
     """
+    vocab_size = Vocabulary(path_to_vocab).size
     model = Sequential()
     for layer_id in range(gConfig["input_layers"]):
-        model.add(LSTM(gConfig["hidden_layers"], input_shape=(gConfig["seq_len"], vocab.size),
+        model.add(LSTM(gConfig["hidden_layers"], input_shape=(gConfig["seq_len"], vocab_size),
                        return_sequences=layer_id + 1 < gConfig["input_layers"]))
         model.add(Dropout(gConfig["amount_of_dropout"]))
 
-    model.add(Dense(vocab.size))
+    model.add(Dense(vocab_size))
     model.add(Activation("softmax"))
-    #  optimizer = RMSprop(lr=gConfig["learning_rate"])
     model.compile(loss="categorical_crossentropy", optimizer="adam")
     return model
 
 
 def sample_prediction(model, X, y, vocab):
     """
-    Select a sequence of shell commands and print the prediction of the model at current training.
+    Select a sequence of shell commands and print the current prediction of the model at current.
     """
-    index = random.randint(0, len(X)-1)
+    index = randint(0, len(X)-1)
     rowX = X[np.array([index])]
     rowy = y[np.array([index])]
 
@@ -160,38 +167,44 @@ def sample_prediction(model, X, y, vocab):
 
 class OnEpochEndCallback(Callback):
 
+    def __init__(self, path_to_vocab, file_delimiter, path_to_corpus, models_directory, gConfig):
+        self.gConfig = gConfig
+        self.vocab = path_to_vocab
+        self.file_delimiter = file_delimiter
+        self.corpus = path_to_corpus
+        self.models_directory = models_directory
+
     def on_epoch_end(self, epoch, logs=None):
         """
         Apply the prediction of the model to a batch of data at the end of each epoch.
         """
-        vocab = Vocabulary("vocab_0.01.txt")
-        X_batch, y_batch = next(generator("corpus3.txt", "FILE_SEP\n", "vocab_0.01.txt", gConfig))
+        vocab = Vocabulary(self.vocab)
+        X_batch, y_batch = next(generator(self.corpus, self.file_delimiter,
+                                          self.vocab, self.gConfig))
         sample_prediction(self.model, X_batch, y_batch, vocab)
+        path_to_model = os.path.join(self.models_directory, "keras_pred_e{}.h5".format(epoch))
+        if epoch % 100 == 0:
+            self.model.save(path_to_model)
 
 
-ON_EPOCH_END_CALLBACK = OnEpochEndCallback()
-
-
-def iterate(model, corpus, file_delimiter, path_to_vocab):
-    """
-    Iterative training of the model.
-    """
-    model.fit_generator(generator(corpus, file_delimiter, path_to_vocab, gConfig),
-                        samples_per_epoch=gConfig["steps_per_epoch"],
-                        nb_epoch=gConfig["nb_epoch"],
-                        callbacks=[ON_EPOCH_END_CALLBACK, ],
-                        validation_data=None)
-
-
-def train(args, log_level=logging.INFO):
+def train_pred(args, log_level=logging.INFO):
     """
     Train the model and show the progress of the prediction at each epoch.
     """
     _log = logging.getLogger("training")
     _log.setLevel(log_level)
 
-    global gConfig
-    gConfig = get_config(args.config_file)
-    vocab = Vocabulary(args.vocabulary)
-    model = generate_model(vocab, gConfig)
-    iterate(model, args.corpus, args.file_delimiter, args.vocabulary)
+    if args.from_model:
+        model = load_model(args.from_model)
+    else:
+        global gConfig
+        gConfig = get_config(args.config_file)
+        model = generate_model(args.vocabulary, gConfig)
+
+    ON_EPOCH_END_CALLBACK = OnEpochEndCallback(args.vocabulary, args.file_delimiter,
+                                               args.corpus, args.models_directory, gConfig)
+    model.fit_generator(generator(args.corpus, args.file_delimiter, args.vocabulary, gConfig),
+                        samples_per_epoch=gConfig["steps_per_epoch"],
+                        nb_epoch=gConfig["nb_epoch"],
+                        callbacks=[ON_EPOCH_END_CALLBACK, ],
+                        validation_data=None)

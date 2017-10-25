@@ -1,7 +1,7 @@
 import os
 
 
-def write_file(args, path_to_file, file_delimiter="FILE DELIMITER\n"):
+def write_file(args, path_to_file, file_delimiter="FILE_SEP\n"):
     """
     Write the history located to path_to_file.
     """
