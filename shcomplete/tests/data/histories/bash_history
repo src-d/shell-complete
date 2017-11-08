@@ -1,31 +1,31 @@
 cd sourced/shell-complete/
 python3 -m shcomplete tfdf
 cd shcomplete/
-python3 testing.py 
+python3 testing.py
 cd data/
 find . -type f | wc -l
 cd ..
-python3 testing.py  
+python3 testing.py
 cd ..
 python3 -m shcomplete tfdf
 cd shcomplete/
-python3 testing.py 
+python3 testing.py
 cd ..
 python3 -m shcomplete tfdf
 cd shcomplete/
-python3 testing.py 
+python3 testing.py
 cd ..
 python3 -m shcomplete tfdf
 cd shcomplete/
-python3 testing.py 
+python3 testing.py
 cd ..
 python3 -m shcomplete tfdf
 cd sourced/shell-complete/shcomplete/
-pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py 
+pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py
 cd ..
 ls
 git status
-git add shcomplete/tfdf.py 
+git add shcomplete/tfdf.py
 git commit --amend
 git status
 git log
@@ -54,7 +54,7 @@ python -m unittest seq2seq.test.pipeline_test
 echo "backend : Agg" >> $HOME/.config/matplotlib/matplotlibrc
 cd build/
 ls
-sudo dpkg -i code_1.14.2-1500506907_amd64.deb 
+sudo dpkg -i code_1.14.2-1500506907_amd64.deb
 sudo apt-get install -f
 ls
 code
@@ -67,30 +67,30 @@ ls
 pip3 install pygtrie
 /usr/bin/python -m pip install pylint
 ls
-pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py 
+pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py
 cd ..
 git status
-git add shcomplete/tfdf.py 
+git add shcomplete/tfdf.py
 git status
 git commit --amend --no-edit
 git push -f origin master
 cd shcomplete/
 ls
-python3 testing.py 
+python3 testing.py
 sudo pip install pygtrie
 cd
 cd sourced/shell-complete/shcomplete/
-python3 testing.py 
+python3 testing.py
 cd ..
 python3 -m shcomplete tfdf -d shcomplete/data
 cd ..
 python3 -m shcomplete tfdf
 python3 -m shcomplete tfdf -d shcomplete/data
 cd shcomplete/
-pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py 
+pep8 --show-source --show-pep8 --max-line-length=99 tfdf.py
 cd ..
 git status
-git add requirements.txt shcomplete/__main__.py  shcomplete/tfdf.py 
+git add requirements.txt shcomplete/__main__.py  shcomplete/tfdf.py
 git status
 git commit
 git log
@@ -102,28 +102,28 @@ git log
 git push origin master
 git push -f origin master
 git status
-git add shcomplete/tfdf.py 
+git add shcomplete/tfdf.py
 git log
 git commit --amend --no-edit
 git push -f origin master
 expressvpn connect frpa2
 cd sourced/shell-complete/
 cd shcomplete/
-code tfdf.py 
+code tfdf.py
 cd sourced/srcd_repos/
 ls
 git clone https://www.github.com/datalogai/recurrentshop.git
 cd recurrentshop/
 python setup.py install
 sudo python setup.py install
-cd 
+cd
 cd sourced/shell-complete/
 ls
 cd shcomplete/
 ls
 vs code seq2seq.py
 code seq2seq.py
-cd 
+cd
 cd sourced/srcd_repos/
 LS
 ls
@@ -132,12 +132,12 @@ ls
 cd seq2seq/
 ls
 sudo python setup.py install
-python3 seq2seq.py 
+python3 seq2seq.py
 cd sourced/shell-complete/
 ls
 cd shcomplete/
-code seq2seq.py 
-cd 
+code seq2seq.py
+cd
 cd sourced/srcd_repos/
 ls
 cd seq2seq/
@@ -156,18 +156,18 @@ python3 -m unittest seq2seq.test.pipeline_test
 ls
 cd seq2seq
 ls
-atom helper.py 
+atom helper.py
 cd sourced/shell-complete/
 cd ../srcd_repos/seq2seq/
 ls
 python3 -m unittest seq2seq.test.pipeline_test
-cd 
+cd
 cd sourced/
 ls
 cd shellcomplete_backup/
 ls
-cd 
-atom .bash_history 
+cd
+atom .bash_history
 cd
 atom .bash_history
 sudo pip3 install seq2seq
@@ -178,7 +178,7 @@ python3 -m shcomplete tfdf -d shcomplete/data
 code library.md
 python3 -m shcomplete tfdf -d shcomplete/data
 ljbol
-python3 -m shcomplete tfdf -d shcomplete/data 
+python3 -m shcomplete tfdf -d shcomplete/data
 cd sourced/srcd_repos/
 ls
 cd
@@ -188,7 +188,7 @@ mkdir contributions
 cd contributions/
 ls
 git clone https://github.com/warenlg/pygtrie.git
-cd 
+cd
 cd sourced/contributions/pygtrie/
 ls
 git status
@@ -196,10 +196,10 @@ git remote -v
 git remote add upstream https://github.com/google/pygtrie.git
 git remote -v
 git pull --rebase upstream master
-atom .bash_history 
+atom .bash_history
 cd sourced/contributions/pygtrie/
 ls
-code pygtrie.py 
+code pygtrie.py
 code .
 cd ..
 cd shell-complete/
@@ -209,16 +209,16 @@ ls
 code .
 gedit
 cd
-atom .bash_history 
+atom .bash_history
 git config --user.name
 git config --global user.name
 git config --global user.email
-python3 pygtrie.py 
-python3 test.py 
+python3 pygtrie.py
+python3 test.py
 git status
 git diff pygtrie.py
-python3 test.py 
-python3 pygtrie.py 
+python3 test.py
+python3 pygtrie.py
 git status
 git add --all
 git status
@@ -229,24 +229,24 @@ ls
 ls -a
 cd .git
 ls -a
-atom config 
+atom config
 cd ..
 git push origin master
 git status
-git add test.py 
+git add test.py
 git commit --amend --no-edit
 git push origin master
 git push -f origin master
-python pygtrie.py 
+python pygtrie.py
 python
-python pygtrie.py 
-python test.py 
+python pygtrie.py
+python test.py
 git status
 git add --all
 git status
 git commit --amend --no-edit
 git push -f origin master
-python test.py 
+python test.py
 git status
 git add --all
 git commit --amend --no-edit

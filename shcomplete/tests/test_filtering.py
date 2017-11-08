@@ -58,6 +58,13 @@ class FilterTests(unittest.TestCase):
     def test_filter(self):
         args = argparse.Namespace(data_directory="shcomplete/tests/data/histories",
                                   min_nb_lines=10)
+        with open("shcomplete/tests/data/histories/PGP_MESSAGE", "w") as f:
+            f.write("-----BEGIN PGP MESSAGE-----")
+        with open("shcomplete/tests/data/histories/zsh_history", "w") as f:
+            f.write(": 1416478680:0;" + "git add -u")
+        with open("shcomplete/tests/data/histories/.fish_history", "w") as f:
+            f.write("git checkout")
+
         filter(args)
         for root, d, files in os.walk(args.data_directory):
             for f in files:
@@ -68,6 +75,7 @@ class FilterTests(unittest.TestCase):
                 self.assertFalse(self.shell_filtering.is_HTML(path_to_file))
                 self.assertFalse(self.shell_filtering.detect_comments(path_to_file))
                 self.assertFalse(self.bash_timestamp.detect_timestamps(path_to_file))
+                self.assertFalse(os.path.exists("shcomplete/tests/data/histories/PGP_MESSAGE"))
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import os
 
 
-def write_file(args, path_to_file, file_delimiter="FILE_SEP\n"):
+def write_file(args, path_to_file):
     """
     Write the history located to path_to_file.
     """
@@ -9,7 +9,7 @@ def write_file(args, path_to_file, file_delimiter="FILE_SEP\n"):
         with open(path_to_file, "r") as f:
             for line in f:
                 fout.write(line)
-        fout.write(file_delimiter)
+        fout.write("\n")
 
 
 def write_corpus(args):

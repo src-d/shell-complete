@@ -171,7 +171,7 @@ git diff spec/models/brand_centroid/selector_spec.rb
 be rspec spec/models/brand_centroid/selector_spec.rb
 be rspec spec/
 exit
-FILE DELIMITER
+
 git fetch -p
 git pull
 git branch
@@ -306,7 +306,7 @@ git clone dev git@oscar:fb_library.git
 git clone -b dev git@oscar:fb_library.git
 ll
 rm -rf oscar
-FILE DELIMITER
+
 sudo osu
 sudo su
 exit

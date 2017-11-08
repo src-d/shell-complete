@@ -7,7 +7,7 @@ Another way to solve similar task
 
 
 * [Grammar as a Foreign Language](https://arxiv.org/pdf/1412.7449.pdf)
-    > This paper tackles the problem of syntactic constituency parsing in NLP. It shows how the domain  agnostic  attention-enhanced  sequence-to-sequence model achieves state-of-the-art results on the most widely used syntactic constituency parsing dataset.
+    > This paper tackles the problem of syntactic constituency parsing in NLP. It shows how the domain agnostic attention-enhanced sequence-to-sequence model achieves state-of-the-art results on the most widely used syntactic constituency parsing dataset.
 
 * [Convolutional Sequence to Sequence Learning](https://arxiv.org/pdf/1705.03122.pdf)
     > Sequence to sequence architecture based entirely on convolutional neural networks. Compared to recurrent models, computations over all elements can be fully parallelized during training to better exploit the GPU hardware and optimization is easier since the number of non-linearities is fixed and independent of the input length. A gated linear units approach eases gradient propagation and equipping each decoder layer with a separate attention module outperforms the accuracy of commun translation tasks.

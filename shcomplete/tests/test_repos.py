@@ -27,8 +27,8 @@ class FetchReposTests(unittest.TestCase):
 
     def test_fetch(self):
         with tempfile.NamedTemporaryFile(prefix="shcomplete-test-repos", suffix=".txt") as tmpf:
-            args = argparse.Namespace(token=None,
-                                      timeout=100, per_page=100, nb_search=1, output=tmpf.name)
+            args = argparse.Namespace(token=None, timeout=100, per_page=100,
+                                      nb_search=1, output=tmpf.name)
             fetch_repos(args, testing=True)
             repos = tmpf.read().decode("utf-8")
         self.assertIsInstance(repos, str)
