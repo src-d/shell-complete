@@ -120,9 +120,9 @@ def generator(chars, vocabulary, corpus, max_cmd_len, batch_size, level_noise):
             misspelled_commands_encoded = seq2seq.encode(misspelled_commands)
             commands_encoded = seq2seq.encode(commands)
             X = pad_sequences(misspelled_commands_encoded, maxlen=max_cmd_len,
-                              dtype='int32', padding='pre', truncating='pre')
+                              dtype="int32", padding="pre", truncating="pre")
             y = pad_sequences(commands_encoded, maxlen=max_cmd_len,
-                              dtype='int32', padding='post', truncating='post')
+                              dtype="int32", padding="post", truncating="post")
             yield X, y[:, :, np.newaxis]
 
 
@@ -164,7 +164,9 @@ def sample_prediction(model, chars, X, y, nb_predictions):
         ind = choice(X.shape[0])
         rowX = X[np.array([ind])]
         rowy = y[np.array([ind])]
+        print("shapeeeee :", rowX.shape)
         preds = model.predict_classes(rowX)
+        print("predssss :", preds.shape)
         true_command = seq2seq.decode(rowy[0])
         model_correction = seq2seq.decode(preds[0], reduction=False)
         misspelled_command = seq2seq.decode(rowX[0], inverted=True)
