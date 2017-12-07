@@ -3,10 +3,11 @@ import logging
 import os
 import unittest
 
+from keras.layers import recurrent
 import numpy as np
 
 from shcomplete.model2predict import Vocabulary, generate_model, train_predict
-from shcomplete.model2predict import generator, sample_prediction
+from shcomplete.model2predict import generator_prediction, display_sample_prediction
 
 
 class DataGenerator(unittest.TestCase):
@@ -45,8 +46,9 @@ class DataGenerator(unittest.TestCase):
         self.assertEqual(self.vc.decode(y, reduction=True), "git checkout")
 
     def test_generator(self):
-        X, y = next(generator(self.path_to_corpus, self.path_to_vocab,
-                              batch_size=32, seq_len=10))
+        self.args = argparse.Namespace(vocabulary=self.path_to_vocab, corpus=self.path_to_corpus,
+                                       seq_len=10, batch_size=32)
+        X, y = next(generator_prediction(self.args))
         self.assertIsInstance(X, np.ndarray)
         self.assertIsInstance(y, np.ndarray)
         self.assertEqual(X.shape, (32, 10))
@@ -60,13 +62,15 @@ class ModelTests(unittest.TestCase):
         self.path_to_vocab = "shcomplete/tests/data/vocab_0.01.txt"
         self.vc = Vocabulary(self.path_to_vocab)
         self.path_to_corpus = "shcomplete/tests/data/corpus.txt"
-        self.model_directory = "shcomplete/tests/data"
+        self.models_directory = "shcomplete/tests/data"
         self.args = argparse.Namespace(vocabulary=self.path_to_vocab, corpus=self.path_to_corpus,
-                                       model_directory=self.model_directory, seq_len=10,
+                                       models_directory=self.models_directory, seq_len=10,
                                        input_layers=1, hidden_layers=2, output_layers=1,
                                        dropout=0.2, batch_size=32, nb_epochs=2, steps_per_epoch=64,
-                                       from_model=None, checkpoint=2)
-        self.model = generate_model(self.args)
+                                       from_model=None, checkpoint=2, optimizer="adam",
+                                       cell_type=recurrent.LSTM)
+        self.model = generate_model(self.args, nb_features=self.vc.size,
+                                    input_length=self.args.seq_len)
 
     def test_generate_model(self):
         self.assertTrue(self.model.built)
@@ -77,9 +81,8 @@ class ModelTests(unittest.TestCase):
         self.assertTrue(self.model.model.uses_learning_phase)
 
     def test_sample_prediction(self):
-        X, y = next(generator(self.path_to_corpus, self.path_to_vocab,
-                              batch_size=32, seq_len=10))
-        seq, next_cmd_pred, next_cmd_true = sample_prediction(self.model, X, y, self.vc)
+        X, y = next(generator_prediction(self.args))
+        seq, next_cmd_pred, next_cmd_true = display_sample_prediction(self.args, self.model, X, y)
         self.assertIsInstance(next_cmd_pred, str)
         self.assertIn(next_cmd_pred, self.vc.trie(self.path_to_vocab))
         self.assertEqual(len(seq.split("\n")), 10)
@@ -87,11 +90,11 @@ class ModelTests(unittest.TestCase):
 
     def test_train_correct(self):
         train_predict(self.args)
-        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_pred_e0.h5"))
-        self.args.from_model = "shcomplete/tests/data/keras_pred_e0.h5"
+        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_e0.h5"))
+        self.args.from_model = "shcomplete/tests/data/keras_e0.h5"
         self.args.nb_epochs = 3
         train_predict(self.args)
-        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_pred_e0.h5"))
+        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_e0.h5"))
 
 
 if __name__ == '__main__':

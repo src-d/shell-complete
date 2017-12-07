@@ -3,7 +3,7 @@ import os
 import sys
 
 from keras.callbacks import Callback
-from keras.layers import Dense, Activation, recurrent, Embedding
+from keras.layers import Dense, Activation, Embedding
 from keras.layers import TimeDistributed, RepeatVector, Dropout
 from keras.models import Sequential, load_model
 import numpy as np
@@ -14,7 +14,7 @@ from shcomplete.tfdf import build_trie
 
 def get_vocabulary(path_to_vocab):
     """
-    Return a list of prefixes making the vocabulary.
+    Return a list of prefixes defining the vocabulary.
     """
     vocab = []
     with open(path_to_vocab) as f:
@@ -52,6 +52,7 @@ class Vocabulary(object):
         """
         Encode sequences of commands into numpy arrays.
         """
+        unknown_token = "UNK"
         if target:
             y = np.zeros(len(batch_of_data))
             for i, command in enumerate(batch_of_data):
@@ -59,7 +60,7 @@ class Vocabulary(object):
                     next_prefix = vocab_trie.longest_prefix(command)[0]
                     y[i] = self.command2index[next_prefix]
                 except KeyError:
-                    y[i] = self.command2index["UNK"]
+                    y[i] = self.command2index[unknown_token]
             return y
         else:
             X = np.zeros((len(batch_of_data), seq_len))
@@ -69,7 +70,7 @@ class Vocabulary(object):
                         prefix = vocab_trie.longest_prefix(cmd)[0]
                         X[i, j] = self.command2index[prefix]
                     except KeyError:
-                        X[i, j] = self.command2index["UNK"]
+                        X[i, j] = self.command2index[unknown_token]
             return X
 
     def decode(self, X, reduction=False):
@@ -82,68 +83,68 @@ class Vocabulary(object):
         return sequence
 
 
-def generator(path_to_corpus, path_to_vocab, batch_size, seq_len):
+def generator_prediction(args):
     """
     Return a random batch of data to feed fit_generator.
     The ouput is a tuple (sequences, outputs)
     """
-    vocab = Vocabulary(path_to_vocab)
-    vocab_trie = vocab.trie(path_to_vocab)
-    with open(path_to_corpus) as f:
+    vocab = Vocabulary(args.vocabulary)
+    vocab_trie = vocab.trie(args.vocabulary)
+    with open(args.corpus) as f:
         histories = f.read().split("\n\n")
         while True:
             sequences = []
             next_commands = []
-            while len(sequences) < batch_size:
+            while len(sequences) < args.batch_size:
                 id_hist = randint(len(histories)-1)
                 history = histories[id_hist].split("\n")
-                id_cmd = randint(len(history[:-seq_len]))
-                target = vocab_trie.longest_prefix(history[id_cmd + seq_len])[0]
+                id_cmd = randint(len(history[:-args.seq_len]))
+                target = vocab_trie.longest_prefix(history[id_cmd + args.seq_len])[0]
                 if target:
-                    sequence = [cmd.rstrip() for cmd in history[id_cmd:id_cmd + seq_len]]
+                    sequence = [cmd.rstrip() for cmd in history[id_cmd:id_cmd + args.seq_len]]
                     sequences.append(sequence)
-                    next_commands.append(history[id_cmd + seq_len])
-            X = vocab.encode(sequences, vocab_trie, seq_len)
-            y = vocab.encode(next_commands, vocab_trie, seq_len, target=True)
+                    next_commands.append(history[id_cmd + args.seq_len])
+            X = vocab.encode(sequences, vocab_trie, args.seq_len)
+            y = vocab.encode(next_commands, vocab_trie, args.seq_len, target=True)
             yield X, y[:, np.newaxis, np.newaxis]
 
 
-def generate_model(args):
+def generate_model(args, nb_features, input_length, nb_repeats=1):
     """
     Generate the model.
     """
-    nb_commands = Vocabulary(args.vocabulary).size
-    emb_weights = np.eye(nb_commands)
+    emb_weights = np.eye(nb_features)
 
     model = Sequential()
-    model.add(Embedding(input_dim=nb_commands, output_dim=nb_commands, input_length=args.seq_len,
+    model.add(Embedding(input_dim=nb_features, output_dim=nb_features, input_length=input_length,
                         weights=[emb_weights], trainable=False))
     for layer_id in range(args.input_layers):
-        model.add(recurrent.LSTM(args.hidden_layers,
+        model.add(args.cell_type(args.hidden_layers,
                                  return_sequences=layer_id + 1 < args.input_layers))
         model.add(Dropout(args.dropout))
 
-    model.add(RepeatVector(1))
+    model.add(RepeatVector(nb_repeats))
     for _ in range(args.output_layers):
-        model.add(recurrent.LSTM(args.hidden_layers, return_sequences=True))
+        model.add(args.cell_type(args.hidden_layers, return_sequences=True))
         model.add(Dropout(args.dropout))
 
-    model.add(TimeDistributed(Dense(nb_commands)))
+    model.add(TimeDistributed(Dense(nb_features)))
     model.add(Activation("softmax"))
     model.compile(loss="sparse_categorical_crossentropy",
-                  optimizer="adam",
+                  optimizer=args.optimizer,
                   metrics=["accuracy"])
     return model
 
 
-def sample_prediction(model, X, y, vocab):
+def display_sample_prediction(args, model, X, y):
     """
-    Select a sequence of shell commands and print the current prediction of the model at current.
+    Select a sequence of command lines and print the current prediction of the model.
     """
     index = randint(0, len(X)-1)
     rowX = X[np.array([index])]
     rowy = y[np.array([index])]
 
+    vocab = Vocabulary(args.vocabulary)
     sequence = vocab.decode(rowX[0])
     preds = model.predict(rowX, verbose=0)[0]
 
@@ -164,33 +165,40 @@ def sample_prediction(model, X, y, vocab):
     return sequence, next_command_pred, next_command_true
 
 
+def initialize_model2predict(args):
+    """
+    Initialize the model and the stack of layers with the right dimensions.
+    The architecture of the layers is specific to the command line prediction problem.
+    """
+    nb_features = Vocabulary(args.vocabulary).size
+    model = generate_model(args, nb_features, input_length=args.seq_len)
+    return model
+
+
 class OnEpochEndCallback(Callback):
-    def __init__(self, args, log):
+    def __init__(self, args, generator, display_sample, log):
         self.log = log
-        self.vocabulary = args.vocabulary
-        self.corpus = args.corpus
-        self.batch_size = args.batch_size
-        self.seq_len = args.seq_len
+        self.args = args
+        self.generator = generator
+        self.display_sample = display_sample
+        self.models_directory = args.models_directory
         self.checkpoint = args.checkpoint
-        self.model_directory = args.model_directory
 
     def on_epoch_end(self, epoch, logs=None):
         """
         Apply the prediction of the model to a batch of data at the end of each epoch.
         """
-        vocab = Vocabulary(self.vocabulary)
-        X_batch, y_batch = next(generator(self.corpus, self.vocabulary,
-                                          self.batch_size, self.seq_len))
-        sample_prediction(self.model, X_batch, y_batch, vocab)
-        path_to_model = os.path.join(self.model_directory, "keras_pred_e{}.h5".format(epoch))
+        X, y = next(self.generator(self.args))
+        self.display_sample(self.args, self.model, X, y)
+        path_to_model = os.path.join(self.models_directory, "keras_e{}.h5".format(epoch))
         if epoch % self.checkpoint == 0:
             self.log.info("Saving the model to %s", path_to_model)
             self.model.save(path_to_model)
 
 
-def train_predict(args, log_level=logging.INFO):
+def train(args, initialize_model, generator, display_sample, log_level=logging.INFO):
     """
-    Train the model and show the progress of the prediction at each epoch.
+    General function to train RNNs with callbacks to see the training progress.
     """
     _log = logging.getLogger("training")
     _log.setLevel(log_level)
@@ -198,11 +206,20 @@ def train_predict(args, log_level=logging.INFO):
     if args.from_model:
         model = load_model(args.from_model)
     else:
-        model = generate_model(args)
+        model = initialize_model(args)
 
-    ON_EPOCH_END_CALLBACK = OnEpochEndCallback(args, _log)
-    model.fit_generator(generator(args.corpus, args.vocabulary, args.batch_size, args.seq_len),
+    ON_EPOCH_END_CALLBACK = OnEpochEndCallback(args, generator, display_sample, _log)
+    model.fit_generator(generator(args),
                         samples_per_epoch=args.steps_per_epoch,
                         nb_epoch=args.nb_epochs,
                         callbacks=[ON_EPOCH_END_CALLBACK, ],
                         validation_data=None)
+
+
+def train_predict(args):
+    """
+    Train a RNN to predict a command line following a previous sequence of commands.
+    At each epoch, some command line predictions are displayed with training statistics.
+    """
+    train(args, initialize_model2predict, generator_prediction,
+          display_sample_prediction)

@@ -3,6 +3,7 @@ import logging
 import sys
 
 from modelforge.logs import setup_logging
+from keras.layers import recurrent
 
 from shcomplete.repos import fetch_repos
 from shcomplete.filtering import filter
@@ -45,6 +46,8 @@ def get_parser() -> argparse.ArgumentParser:
                                         "Text file where histories are delimited by a blank line.")
     vocabulary_arg_default = one_arg_parser("--vocabulary", required=True,
                                             help="Path to the file that contains the vocabulary.")
+    cell_type_arg_default = one_arg_parser("--cell-type", default=recurrent.LSTM,
+                                           help="Base type of cells for recurrent layers")
     input_layers_arg_default = one_arg_parser("--input-layers", type=int, default=2,
                                               help="Nuber of input layers.")
     hidden_layers_arg_default = one_arg_parser("--hidden-layers", type=int, default=128,
@@ -61,9 +64,11 @@ def get_parser() -> argparse.ArgumentParser:
     dropout_arg_default = one_arg_parser("--dropout", type=float, default=0.4,
                                          help="Randomly turn off some fraction of neurons"
                                          "on each training iteration.")
-    model_directory_arg_default = one_arg_parser("--model-directory", required=True,
-                                                 help="Directory where models are saved"
-                                                 "at any checkpoint.")
+    optimizer_arg_default = one_arg_parser("--optimizer", type=str, default="adam",
+                                           help="Optimizer required for compiling the Keras model")
+    models_directory_arg_default = one_arg_parser("--models-directory", required=True,
+                                                  help="Directory where models are saved"
+                                                  "at any checkpoint.")
     from_model_arg_default = one_arg_parser("--from-model",
                                             help="Path to the model to start the training from.")
     checkpoint_arg_default = one_arg_parser("--checkpoint", type=int, default=100,
@@ -115,9 +120,10 @@ def get_parser() -> argparse.ArgumentParser:
         "model2predict", help="Train a Keras sequential model."
         "Return at the end of each epoch, a random sequence of commands and its prediction.",
         parents=[vocabulary_arg_default, corpus_arg_default, checkpoint_arg_default,
-                 model_directory_arg_default, from_model_arg_default, batch_size_arg_default,
+                 models_directory_arg_default, from_model_arg_default, batch_size_arg_default,
                  input_layers_arg_default, hidden_layers_arg_default, output_layers_arg_default,
-                 nb_epochs_arg_default, steps_per_epoch_arg_default, dropout_arg_default])
+                 nb_epochs_arg_default, steps_per_epoch_arg_default, dropout_arg_default,
+                 optimizer_arg_default, cell_type_arg_default])
     model2predict_parser.set_defaults(handler=train_predict)
     model2predict_parser.add_argument("--seq-len", type=int, default=50,
                                       help="Length of the input sequence"
@@ -127,9 +133,10 @@ def get_parser() -> argparse.ArgumentParser:
         "model2correct", help="Train a Keras sequential model."
         "Return at the end of each epoch, a random misspelled command and its correction.",
         parents=[vocabulary_arg_default, corpus_arg_default, checkpoint_arg_default,
-                 model_directory_arg_default, from_model_arg_default, batch_size_arg_default,
+                 models_directory_arg_default, from_model_arg_default, batch_size_arg_default,
                  input_layers_arg_default, hidden_layers_arg_default, output_layers_arg_default,
-                 nb_epochs_arg_default, steps_per_epoch_arg_default, dropout_arg_default])
+                 nb_epochs_arg_default, steps_per_epoch_arg_default, dropout_arg_default,
+                 optimizer_arg_default, cell_type_arg_default])
     model2correct_parser.set_defaults(handler=train_correct)
     model2correct_parser.add_argument("--max-cmd-len", type=int, default=40,
                                       help="Maximum number of characters"

@@ -3,10 +3,11 @@ import logging
 import os
 import unittest
 
+from keras.layers import recurrent
 import numpy as np
 
 from shcomplete.model2correct import Seq2seq, generate_model, get_chars, train_correct
-from shcomplete.model2correct import generator, sample_prediction
+from shcomplete.model2correct import generator_misprints, dislpay_sample_correction
 
 
 class DataGenerator(unittest.TestCase):
@@ -39,8 +40,9 @@ class DataGenerator(unittest.TestCase):
         self.assertEqual(self.seq2seq.decode(Z_null, reduction=False), "")
 
     def test_generator(self):
-        X, y = next(generator(self.chars, self.path_to_corpus, self.path_to_vocab,
-                              max_cmd_len=40, batch_size=32, level_noise=0.4))
+        self.args = argparse.Namespace(vocabulary=self.path_to_vocab, corpus=self.path_to_corpus,
+                                       max_cmd_len=40, batch_size=32, level_noise=0.4)
+        X, y = next(generator_misprints(self.args))
         self.assertIsInstance(X, np.ndarray)
         self.assertIsInstance(y, np.ndarray)
         self.assertEqual(X.shape, (32, 40))
@@ -54,14 +56,17 @@ class ModelTests(unittest.TestCase):
         self.path_to_vocab = "shcomplete/tests/data/vocab_0.01.txt"
         self.chars = get_chars(self.path_to_vocab)
         self.path_to_corpus = "shcomplete/tests/data/corpus.txt"
-        self.model_directory = "shcomplete/tests/data"
+        self.models_directory = "shcomplete/tests/data"
         self.args = argparse.Namespace(vocabulary=self.path_to_vocab, corpus=self.path_to_corpus,
-                                       model_directory=self.model_directory, max_cmd_len=40,
+                                       models_directory=self.models_directory, max_cmd_len=40,
                                        input_layers=1, hidden_layers=4, output_layers=1,
                                        dropout=0.2, batch_size=32, level_noise=0.4,
                                        nb_predictions=2, nb_epochs=1, steps_per_epoch=64,
-                                       from_model=None, checkpoint=2)
-        self.model = generate_model(self.chars, self.args)
+                                       from_model=None, checkpoint=2, optimizer="adam",
+                                       cell_type=recurrent.LSTM)
+        self.model = generate_model(self.args, nb_features=len(self.chars)+1,
+                                    input_length=self.args.max_cmd_len,
+                                    nb_repeats=self.args.max_cmd_len)
 
     def test_generate_model(self):
         self.assertTrue(self.model.built)
@@ -71,20 +76,19 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(self.model.get_weights()[0].shape, (len(self.chars)+1, len(self.chars)+1))
         self.assertTrue(self.model.model.uses_learning_phase)
 
-    def test_sample_prediction(self):
-        X, y = next(generator(self.chars, self.path_to_corpus, self.path_to_vocab,
-                              max_cmd_len=40, batch_size=32, level_noise=0.4))
-        predicted_cmd = sample_prediction(self.model, self.chars, X, y, nb_predictions=2)
-        self.assertIsInstance(predicted_cmd, str)
-        self.assertTrue(len(predicted_cmd) <= 40)
+    def test_display_sample_correction(self):
+        X, y = next(generator_misprints(self.args))
+        correct_cmd = dislpay_sample_correction(self.args, self.model, X, y, nb_corrections=2)
+        self.assertIsInstance(correct_cmd, str)
+        self.assertTrue(len(correct_cmd) <= 40)
 
     def test_train_correct(self):
         train_correct(self.args)
-        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_spell_e0.h5"))
-        self.args.from_model = "shcomplete/tests/data/keras_spell_e0.h5"
+        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_e0.h5"))
+        self.args.from_model = "shcomplete/tests/data/keras_e0.h5"
         self.args.nb_epochs = 3
         train_correct(self.args)
-        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_spell_e2.h5"))
+        self.assertTrue(os.path.isfile("shcomplete/tests/data/keras_e2.h5"))
 
 
 if __name__ == '__main__':
