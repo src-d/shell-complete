@@ -1,4 +1,10 @@
+import sys
 from setuptools import setup, find_packages
+
+if sys.version_info < (3, 5, 0):
+    typing = ["typing"]
+else:
+    typing = []
 
 setup(
     name="shell-complete",
@@ -13,7 +19,10 @@ setup(
     download_url='https://github.com/src-d/shell-complete',
     packages=find_packages(exclude=("shcomplete.tests",)),
     keywords=["machine learning on source code", "shell", "bash"],
-    install_requires=["modelforge>=0.1.0-alpha", ],
+    entry_points={
+        "console_scripts": ["shcomplete=shcomplete.__main__:main"],
+    },
+    install_requires=["modelforge>=0.1.0-alpha", ] + typing,
     package_data={"": ["LICENSE", "README.md"]},
     classifiers=[
         "Development Status :: 4 - Beta",

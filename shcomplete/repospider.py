@@ -1,7 +1,6 @@
-from scrapy.spiders import Spider
-from shell_scraper.items import ShellScraperItem
-from scrapy.http import Request
 import just
+
+from scrapy.spiders import Spider
 
 
 class MySpider(Spider):

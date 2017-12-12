@@ -1,0 +1,423 @@
+UNK
+ls
+cd
+git
+sudo
+cd ..
+exit
+vim
+vi
+rm
+cat
+mkdir
+git add
+git commit
+git push
+clear
+git status
+mv
+pwd
+sudo apt-get
+cp
+echo
+ls -l
+ll
+git commit -m
+nano
+chmod
+sudo apt-get install
+ssh
+git clone
+python
+git remote
+su
+rails
+rm -rf
+man
+make
+git pull
+ls -la
+ps
+git config
+ruby
+git init
+git add .
+apt-get
+touch
+wget
+git config --global
+grep
+git remote add
+ping
+find
+git push origin
+ls -a
+less
+source
+ifconfig
+git remote add origin
+curl
+git checkout
+which
+ln
+mysql
+cd ~
+ls -al
+gem
+apt-get install
+tar
+git push -u
+ln -s
+top
+git push origin master
+bundle
+rake
+gcc
+git push -u origin
+node
+ssh-keygen
+brew
+cd /
+rvm
+git push -u origin master
+emacs
+scp
+cd bin
+tail
+chmod +x
+sudo apt-get update
+git log
+kill
+export
+git config --global user.email
+git diff
+npm
+git config --global user.name
+git branch
+php
+bash
+cd ../
+la
+gem install
+history
+rm -r
+df
+mount
+sudo nano
+sudo rm
+java
+sudo su
+npm install
+dir
+git pull origin
+fg
+ssh-keygen -t
+open
+bundle install
+rails new
+sudo chmod
+screen
+cp -r
+rails s
+reboot
+mysql -u
+logout
+..
+ssh-keygen -t rsa
+date
+git commit -a
+tmux
+rails server
+alias
+find .
+git reset
+sudo reboot
+zsh
+./a.out
+sudo service
+sudo cp
+tail -f
+pip
+brew install
+sh
+du
+cc
+git rm
+su -
+g++
+heroku
+git add -A
+chown
+ruby -v
+git pull origin master
+unzip
+svn
+sudo vim
+rake db:migrate
+echo $PATH
+for
+sudo pacman
+rmdir
+subl
+chmod 777
+sudo chown
+pip install
+df -h
+cd..
+ps aux
+rails generate
+set
+apt-get update
+git merge
+git checkout master
+ssh-keygen -t rsa -C
+killall
+bundle exec
+./configure
+gedit
+vim .vimrc
+pacman
+sudo vi
+javac
+chsh
+cd ../..
+ssh-add
+sudo add-apt-repository
+rails g
+kill -9
+git remote -v
+netstat
+cd .
+git commit -am
+help
+make clean
+sudo pacman -S
+sudo mv
+whereis
+sudo make
+service
+cd home
+whoami
+sudo shutdown
+vim .zshrc
+sudo mount
+sudo ifconfig
+vagrant
+quit
+locate
+git commit -m "first
+more
+sudo apt-get upgrade
+git fetch
+rails -v
+lex
+cd -
+find . -name
+sudo gem
+scp -r
+sudo python
+shutdown
+mkdir -p
+history |
+git checkout -b
+gem install rails
+rvm use
+git stash
+git push heroku
+cd bin/
+sudo mkdir
+git commit -a -m
+git st
+cd ../../
+dmesg
+ps aux |
+sudo rm -rf
+git rebase
+git commit -m "first commit"
+passwd
+mysql -u root
+startx
+vim .bashrc
+irb
+ps -ef
+rvm install
+perl
+mpirun
+sudo gem install
+ps aux | grep
+who
+rm -f
+gs
+env
+sudo pip
+find -name
+chmod -R
+git reset --hard
+htop
+sudo apt-get install git
+sudo aptitude
+git add *
+python manage.py
+cd Downloads/
+chown -R
+npm install -g
+chsh -s
+curl -L
+grep -r
+sudo pip install
+sed
+java -jar
+test
+systemctl
+cls
+yacc
+yaourt
+docker
+git co
+vi .bashrc
+ls -lh
+cd ~/.ssh
+git push heroku master
+gem list
+yum
+cd app
+cd .ssh
+source .zshrc
+hostname
+if
+mpirun -np
+bundle exec rake
+sudo make install
+uname
+vi primeiro
+cd /home
+history | grep
+mc
+sudo ln
+for i
+python3
+primeiro
+git add README.md
+gem update
+for i in
+time
+ip
+find /
+cd www
+telnet
+rake routes
+cd /etc
+rails c
+cd dotfiles/
+cd lib
+mkdir bin
+yacc -d
+exec
+chmod 755
+cd ~/
+mysql -u root -p
+sudo npm
+tree
+git --version
+cd .vim
+git help
+;s
+sl
+cc lex.yy.c
+sudo apt-get remove
+sudo ln -s
+fdisk
+psql
+cd src
+./a.out <
+pacman -S
+cd .ssh/
+nslookup
+sudo git
+sudo npm install
+rbenv
+git remote rm
+vim index.html
+crontab
+apt-cache
+grunt
+brew doctor
+ssh -T
+node server.js
+pico
+cd test
+diff
+sudo ls
+ls |
+gvim
+ping www.yahoo.com
+file
+bundle update
+gst
+cd /var/www/
+go
+mpirun -np 2
+vim ~/.vimrc
+gcc -o
+mvim
+ga
+cd test/
+which git
+sudo aptitude install
+make install
+free
+source .bashrc
+cd src/
+sudo chown -R
+svn up
+git add --all
+man ls
+gc
+mvn
+rvm gemset
+vim .gitignore
+rvm list
+echo $?
+mount -t
+sudo umount
+ps -ef |
+sudo find
+brew update
+sudo su -
+ps -ef | grep
+heroku login
+cd /etc/
+cd /tmp
+pkill
+cd /bin
+eval
+cd Downloads
+ssh -T git@github.com
+cd scripts/
+sudo /etc/init.d/networking
+screen -r
+rm *
+cd /var/www
+open .
+umount
+route
+sudo ifup
+zip
+mcedit
+apt-cache search
+sudo -i
+node -v
+rails console
+id
+touch README.md
+python -m
+mpirun -np 2 gpaw-python
+node app
+git show
+sudo systemctl
+apt
+source ~/.zshrc
+cp -R
+ruby -e
+crontab -e
+ping google.com
