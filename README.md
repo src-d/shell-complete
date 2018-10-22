@@ -60,4 +60,4 @@ As regards misprints correction, a sequential model that reached 99% accuracy on
 
 ## License
 
-Apache 2.0.
+ [Apache 2.0](https://github.com/madhurgupta10/shell-complete/blob/master/LICENSE)
