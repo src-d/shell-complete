@@ -1,8 +1,5 @@
-import argparse
 import logging
-import os
 import re
-import sys
 from time import sleep
 
 from github import Github as GitHub
